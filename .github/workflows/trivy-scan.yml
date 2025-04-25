@@ -1,0 +1,27 @@
+name: Trivy Image Scan
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  trivy-scan:
+    name: Run Trivy vulnerability scanner
+    runs-on: ubuntu-latest
+    continue-on-error: true  # ❗ pour ne pas faire échouer le pipeline
+    steps:
+      - name: Install Trivy
+        run: |
+          sudo apt-get install wget -y
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.49.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.49.1_Linux-64bit.deb
+
+      - name: Trivy Scan Docker Image
+        env:
+          TRIVY_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          TRIVY_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          echo "$TRIVY_PASSWORD" | docker login -u "$TRIVY_USERNAME" --password-stdin
+          trivy image --severity HIGH,CRITICAL ngnepiepaye/isen-python:dev-${{ github.sha }}
