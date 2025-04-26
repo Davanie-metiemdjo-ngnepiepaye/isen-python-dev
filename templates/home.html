@@ -137,6 +137,12 @@
                 <p class="mb-3">{{ product.description}}</p>
                 <h6>Price</h6>
                 <p class="mb-1">$ {{ product.price}}</p>
+
+                <form action="{% url 'add_to_cart' product.id %}" method="get">
+                  <button type="submit" class="btn btn-success mt-3">
+                    🛒 Ajouter au panier
+                  </button>
+                </form>
               </div>
             </div>
           </div>
