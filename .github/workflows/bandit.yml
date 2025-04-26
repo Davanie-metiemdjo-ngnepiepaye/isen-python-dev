@@ -27,4 +27,4 @@ jobs:
 
       - name: Run Bandit excluding test folders
         run: |
-          bandit -r . -x unit_tests,integration_tests
+          bandit -r . -x ./unit_tests,./integration_tests
