@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Node.js dependencies (Cypress and others)
+      - name: Install Node.js dependencies (for Cypress)
         run: |
           npm install
 
@@ -39,11 +39,10 @@ jobs:
         run: |
           python manage.py migrate
           nohup python manage.py runserver 0.0.0.0:8000 &
-          sleep 10
+          sleep 10  # Attendre que le serveur soit prêt
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
         with:
-          start: npm start  # Ce n'est pas nécessaire ici, alors on le retire
-          wait-on: http://localhost:8000
+          wait-on: http://localhost:8000  # ✅ Juste attendre Django
           wait-on-timeout: 60
