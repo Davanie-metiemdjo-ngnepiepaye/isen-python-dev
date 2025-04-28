@@ -37,6 +37,7 @@ CUSTOM_APPS = [
     'products',
     'favourites',
     'home',
+    'cart',
 ]
 
 THIRD_PARTY_APPS = [
