@@ -1,0 +1,28 @@
+name: Trivy File System Scan
+
+on:
+  push:
+    branches: [ main, feature/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  trivy-scan:
+    name: Run Trivy vulnerability scanner on filesystem
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install wget -y
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.49.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.49.1_Linux-64bit.deb
+
+      - name: Trivy Scan Filesystem
+        run: |
+          trivy fs --severity HIGH,CRITICAL .

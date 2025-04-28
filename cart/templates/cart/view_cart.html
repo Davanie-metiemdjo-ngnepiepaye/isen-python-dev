@@ -1,0 +1,17 @@
+<h2>🛒 Contenu du panier</h2>
+
+{% if products %}
+    <ul>
+    {% for product in products %}
+        <li>
+            <strong>{{ product.name }}</strong> — Quantité : {{ product.quantity }}
+        </li>
+    {% endfor %}
+    </ul>
+
+    <!-- Bouton pour vider le panier -->
+    <a href="{% url 'clear_cart' %}" class="btn btn-danger">🗑️ Vider le panier</a>
+
+{% else %}
+    <p>Votre panier est vide.</p>
+{% endif %}
