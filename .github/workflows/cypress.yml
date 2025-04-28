@@ -3,10 +3,10 @@ name: Run Cypress Tests
 on:
   push:
     branches:
-      - main   # Exécuter sur chaque push dans main
+      - main
   pull_request:
     branches:
-      - main   # Et aussi sur chaque pull request vers main
+      - main
 
 jobs:
   cypress-tests:
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'  # ✅ Forcer Python 3.9 ici pour ton projet Django
+          python-version: '3.9'
 
       - name: Install Python dependencies
         run: |
@@ -29,9 +29,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'  # Version Node.js recommandée
+          node-version: '18'
 
-      - name: Install Cypress
+      - name: Install Node.js dependencies (Cypress and others)
         run: |
           npm install
 
@@ -39,8 +39,11 @@ jobs:
         run: |
           python manage.py migrate
           nohup python manage.py runserver 0.0.0.0:8000 &
-          sleep 10  # Attendre que le serveur démarre
+          sleep 10
 
-      - name: Run Cypress tests
-        run: |
-          npx cypress run
+      - name: Run Cypress Tests
+        uses: cypress-io/github-action@v5
+        with:
+          start: npm start  # Ce n'est pas nécessaire ici, alors on le retire
+          wait-on: http://localhost:8000
+          wait-on-timeout: 60
