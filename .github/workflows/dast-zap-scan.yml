@@ -1,0 +1,19 @@
+name: DAST ZAP Scan
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  zap_scan:
+    name: OWASP ZAP Baseline Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.6.0
+        with:
+          target: 'https://python-app-171565716676.europe-west1.run.app'
+          cmd_options: '-t 60'
