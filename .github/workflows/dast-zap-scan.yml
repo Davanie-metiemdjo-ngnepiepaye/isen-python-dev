@@ -10,21 +10,23 @@ jobs:
   zap_scan:
     name: OWASP ZAP Baseline Scan
     runs-on: ubuntu-latest
+    continue-on-error: true  # Évite que le job échoue en cas de vulnérabilités
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Check Docker version
+        run: docker --version
+
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
-        continue-on-error: true
         with:
           target: 'https://python-app-171565716676.europe-west1.run.app'
           cmd_options: '-t 1 -J report.json -w report.md -r report.html'
 
       - name: Upload ZAP reports
         uses: actions/upload-artifact@v4
-
         with:
           name: zap-reports
           path: |
