@@ -1,31 +1,50 @@
-name: DAST ZAP Scan
+name: Run Cypress Tests
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  zap_scan:
-    name: OWASP ZAP Baseline Scan
+  cypress-tests:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.10.0
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          target: 'https://python-app-171565716676.europe-west1.run.app'
-          cmd_options: '-t 1 -J report.json -w report.md -r report.html'
+          python-version: '3.9'
 
-      - name: Upload ZAP reports
-        uses: actions/upload-artifact@v4
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: zap-reports
-          path: |
-            report.json
-            report.md
-            report.html
+          node-version: '18'
+
+      - name: Install Node.js dependencies (for Cypress)
+        run: npm install
+
+      - name: Start Django server
+        run: |
+          python manage.py migrate
+          nohup python manage.py runserver 0.0.0.0:8000 &
+          sleep 15
+
+      - name: Run Cypress Tests
+        uses: cypress-io/github-action@v5
+        with:
+          wait-on: http://localhost:8080
+
+          wait-on-timeout: 60
+          start: ''   # Pas de commande à lancer (car tu l'as déjà fait à l'étape précédente)
+          command: '' # Lancer Cypress tel quel (depuis package.json)

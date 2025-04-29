@@ -37,14 +37,13 @@ jobs:
       - name: Start Django server
         run: |
           python manage.py migrate
-          nohup python manage.py runserver 0.0.0.0:8000 &
+          nohup python manage.py runserver 0.0.0.0:8080 &
           sleep 15
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
         with:
           wait-on: http://localhost:8080
-
-          wait-on-timeout: 60
-          start: ''   # Pas de commande à lancer (car tu l'as déjà fait à l'étape précédente)
-          command: '' # Lancer Cypress tel quel (depuis package.json)
+          wait-on-timeout: 90
+          start: ''
+          command: ''
