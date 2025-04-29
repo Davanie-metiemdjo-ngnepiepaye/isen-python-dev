@@ -43,7 +43,8 @@ jobs:
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
         with:
-          wait-on: http://localhost:8000
+          wait-on: http://localhost:8080
+
           wait-on-timeout: 60
           start: ''   # Pas de commande à lancer (car tu l'as déjà fait à l'étape précédente)
           command: '' # Lancer Cypress tel quel (depuis package.json)
