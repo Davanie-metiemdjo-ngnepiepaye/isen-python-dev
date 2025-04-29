@@ -20,7 +20,7 @@ jobs:
 
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
-        continue-on-error: true  # Ne pas échouer même en cas de vulnérabilités
+        continue-on-error: true
         with:
           target: 'https://python-app-171565716676.europe-west1.run.app'
           cmd_options: '-t 1 -J report.json -w report.md -r report.html'
