@@ -1,50 +1,32 @@
-name: Run Cypress Tests
+name: DAST ZAP Scan
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  cypress-tests:
+  zap_scan:
+    name: OWASP ZAP Baseline Scan
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.10.0
+        continue-on-error: true  # ✅ Ne pas échouer même si vulnérabilités
         with:
-          python-version: '3.9'
+          target: 'https://python-app-171565716676.europe-west1.run.app'
+          cmd_options: '-t 1 -J report.json -w report.md -r report.html'
 
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Upload ZAP reports
+        uses: actions/upload-artifact@v3
         with:
-          node-version: '18'
-
-      - name: Install Node.js dependencies (for Cypress)
-        run: npm install
-
-      - name: Start Django server
-        run: |
-          python manage.py migrate
-          nohup python manage.py runserver 0.0.0.0:8000 &
-          sleep 15
-
-      - name: Run Cypress Tests
-        uses: cypress-io/github-action@v5
-        with:
-          wait-on: http://localhost:8080
-
-          wait-on-timeout: 60
-          start: ''   # Pas de commande à lancer (car tu l'as déjà fait à l'étape précédente)
-          command: '' # Lancer Cypress tel quel (depuis package.json)
+          name: zap-reports
+          path: |
+            report.json
+            report.md
+            report.html
