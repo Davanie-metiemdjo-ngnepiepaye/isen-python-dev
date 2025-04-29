@@ -37,12 +37,14 @@ jobs:
       - name: Run Django migrations & start server
         run: |
           python manage.py migrate
-          nohup python manage.py runserver 0.0.0.0:8080 &
-          sleep 15
+          nohup python manage.py runserver 0.0.0.0:8080 > server.log 2>&1 &
+          sleep 30
+          cat server.log
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
         with:
           wait-on: http://localhost:8080
           wait-on-timeout: 90
-          start: ''    # Pas besoin de démarrer un serveur ici
+          start: ''
+          command: ''
