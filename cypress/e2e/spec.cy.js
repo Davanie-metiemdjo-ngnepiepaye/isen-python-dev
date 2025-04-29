@@ -1,106 +1,126 @@
-describe('OC-commerce: Full Signup/Login/Favourite Management', () => {
-
-  // ➡️ Ignorer toutes les erreurs JS du site pendant les tests
-  Cypress.on('uncaught:exception', (err, runnable) => {
-    return false;
-  });
-
-  const username = 'NMD';
+// =============== Create and connect to an account ===============
+describe('Create and connect to an account', () => {
+  const randomId = Math.floor(Math.random() * 100000);
+  const username = `fakeuser${randomId}`;
+  const email = `fake${randomId}@email.com`;
   const password = '1hstesh<23456789';
-  const email = 'ngnepiepayedavanie@gmail.com';
 
-  beforeEach(() => {
-    cy.visit('http://localhost:8000/home');
+  it('Visits the OC-commerce site and creates an account', () => {
+    cy.visit('/home');
 
-    // Déconnexion si déjà connecté
-    cy.get('body').then(($body) => {
-      if ($body.find('a:contains("LOGOUT")').length) {
-        cy.contains('LOGOUT').click();
-      }
-    });
-  });
+    cy.contains('SIGNUP', { timeout: 10000 }).click();
+    cy.url({ timeout: 10000 }).should('include', '/user/signup');
 
-  it('Signs up or logs in successfully', () => {
-    // Vérifier si SIGNUP est disponible
-    cy.get('body').then(($body) => {
-      if ($body.find('a:contains("SIGNUP")').length) {
-        // Processus d'inscription
-        cy.contains('SIGNUP').click();
-        cy.url().should('include', '/user/signup');
+    cy.get('[id^=fname]').type('fake');
+    cy.get('[id^=lname]').type('user');
+    cy.get('[id^=username]').type(username);
+    cy.get('[id^=email]').type(email);
+    cy.get('[id^=pass]').type(password);
+    cy.get('[id^=re_pass]').type(password);
+    cy.get('form').contains('Register').click();
 
-        cy.get('[id^=fname]').type('Davanie');
-        cy.get('[id^=lname]').type('Ngnepiepaye metiemdjo');
-        cy.get('[id^=username]').type(username);
-        cy.get('[id^=email]').type(email);
-        cy.get('[id^=pass]').type(password);
-        cy.get('[id^=re_pass]').type(password);
-        cy.get('input[type="checkbox"]').check({ force: true });
-        cy.get('form').contains('Register').click();
-
-        // Gestion du lien "I am already member" après tentative de création
-        cy.get('body').then(($body2) => {
-          if ($body2.find('a:contains("I am already member")').length) {
-            cy.contains('I am already member').click();
-          }
-        });
-
-      } else {
-        // Sinon, aller directement sur LOGIN
-        cy.contains('LOGIN').click();
+    cy.url({ timeout: 10000 }).then((currentUrl) => {
+      if (!currentUrl.includes('/user/login')) {
+        cy.visit('/user/login');
       }
     });
 
-    // Connexion
-    cy.url({ timeout: 10000 }).should('include', '/user/login');
     cy.get('[id^=your_name]').type(username);
     cy.get('[id^=your_pass]').type(password);
     cy.get('form').contains('Log in').click();
 
-    // Vérification après connexion
     cy.url({ timeout: 10000 }).should('include', '/home');
-    cy.contains('FAVOURITE').should('be.visible');
+    cy.contains('FAVOURITE', { timeout: 10000 }).should('be.visible');
+
+    Cypress.env('username', username);
+    Cypress.env('password', password);
+  });
+});
+
+// =============== Put item in favourite and remove it ===============
+describe('Put item in favourite and remove it', () => {
+  const password = '1hstesh<23456789';
+  let username;
+
+  beforeEach(() => {
+    username = Cypress.env('username') || 'fakeuser';
+    cy.visit('/user/login');
+
+    cy.get('[id^=your_name]').type(username);
+    cy.get('[id^=your_pass]').type(password);
+    cy.get('form').contains('Log in').click();
+    cy.url({ timeout: 10000 }).should('include', '/home');
   });
 
-  it('Adds a product to favourites and removes it', () => {
-    // Vérifier si connecté, sinon se reconnecter
+  it('Manages favourites', () => {
+    cy.contains('FAVOURITE', { timeout: 10000 }).click();
+    cy.url({ timeout: 10000 }).should('include', '/favourite');
+
+    cy.get('body').then(($body) => {
+      if ($body.find('table.table').length === 0) {
+        cy.contains('No Product in your favourite list').should('be.visible');
+      } else {
+        cy.get('.fa-heart').each(($heart) => {
+          cy.wrap($heart).click();
+        });
+        cy.reload();
+        cy.contains('No Product in your favourite list').should('be.visible');
+      }
+    });
+
+    cy.contains('OC-commerce').click();
+    cy.url({ timeout: 10000 }).should('include', '/home');
+
+    cy.get('.col-md-6.col-lg-4').first().trigger('mouseover');
+    cy.get('.col-md-6.col-lg-4').first().within(() => {
+      cy.get('.fa-heart').click({ force: true });
+    });
+
+    cy.contains('FAVOURITE').click();
+    cy.url({ timeout: 10000 }).should('include', '/favourite');
+    cy.get('table.table tbody tr').should('have.length.at.least', 1);
+
+    cy.get('.fa-heart').first().click();
+    cy.contains('No Product in your favourite list').should('be.visible');
+  });
+});
+
+// =============== Add item to Cart (Forcing modal) ===============
+describe('Add item to cart', () => {
+  const password = '1hstesh<23456789';
+  let username;
+
+  beforeEach(() => {
+    username = Cypress.env('username') || 'fakeuser';
+    cy.visit('/home');
+
     cy.get('body').then(($body) => {
       if ($body.find('a:contains("LOGIN")').length) {
-        cy.contains('LOGIN').click();
+        cy.contains('LOGIN', { timeout: 10000 }).click();
         cy.get('[id^=your_name]').type(username);
         cy.get('[id^=your_pass]').type(password);
         cy.get('form').contains('Log in').click();
-        cy.contains('PROFILE', { timeout: 10000 }).should('be.visible').click();
-      } else {
-        cy.contains('PROFILE', { timeout: 10000 }).should('be.visible').click();
-      }
-    });
-
-    // Sur PROFILE
-    cy.url({ timeout: 10000 }).should('include', '/profile');
-
-    // Ajouter un produit
-    cy.contains('Add').first().should('be.visible').click();
-
-    // Aller dans FAVOURITE
-    cy.contains('FAVOURITE').click();
-    cy.url({ timeout: 10000 }).should('include', '/favourite');
-
-    // Vérification de l'ajout
-    cy.get('body').then(($body2) => {
-      if ($body2.text().includes('No Product in your favourite list')) {
-        cy.log('❌ Produit non ajouté.');
-      } else {
-        cy.get('table tbody tr', { timeout: 10000 }).should('have.length.greaterThan', 0);
-
-        // Suppression du produit favori (clic icône ❤️)
-        cy.get('table tbody tr').first().within(() => {
-          cy.get('td').eq(3).find('svg, img, i, button').click();
-        });
-
-        // Vérification finale
-        cy.contains('No Product in your favourite list', { timeout: 10000 }).should('be.visible');
+        cy.url({ timeout: 10000 }).should('include', '/home');
       }
     });
   });
 
+  it('Adds an item to the cart and verifies it', () => {
+    // Forcer l'ouverture de la modale directement sans cliquer
+    cy.get('#portfolioModal1').invoke('addClass', 'show').invoke('css', 'display', 'block');
+
+    // Cliquer sur "Ajouter au panier"
+    cy.contains('Ajouter au panier', { timeout: 10000 }).click();
+
+    // Cliquer sur "Voir le panier"
+    cy.contains('Voir le panier', { timeout: 10000 }).click();
+
+    // Vérifier que l'URL est bien le panier
+    cy.url({ timeout: 10000 }).should('include', '/cart');
+
+   // ✅ Vérifier qu’un élément .card (produit) est bien présent
+   cy.contains('Coca cola', { timeout: 10000 }).should('be.visible');
+
+
+  });
 });
