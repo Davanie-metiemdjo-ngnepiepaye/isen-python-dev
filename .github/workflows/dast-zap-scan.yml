@@ -17,7 +17,7 @@ jobs:
 
       - name: ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
-        continue-on-error: true 
+        continue-on-error: true
         with:
           target: 'https://python-app-171565716676.europe-west1.run.app'
           cmd_options: '-t 1 -J report.json -w report.md -r report.html'
@@ -26,4 +26,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: zap-reports
-          path: report.json, report.md, report.html
+          path: |
+            report.json
+            report.md
+            report.html
