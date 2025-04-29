@@ -34,7 +34,7 @@ jobs:
       - name: Install Node.js dependencies (for Cypress)
         run: npm install
 
-      - name: Start Django server
+      - name: Run Django migrations & start server
         run: |
           python manage.py migrate
           nohup python manage.py runserver 0.0.0.0:8080 &
@@ -45,5 +45,4 @@ jobs:
         with:
           wait-on: http://localhost:8080
           wait-on-timeout: 90
-          start: ''
-          command: ''
+          start: ''    # Pas besoin de démarrer un serveur ici
